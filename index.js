@@ -8,7 +8,6 @@ const commands = [
 
 let DISCORD_TOKEN = ""
 let DISCORD_CLIENT_ID = ""
-let CHATGPT_TOKEN = ""
 
 let chatHistories = [];
 function saveChatHistory(role,message){
