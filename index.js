@@ -72,7 +72,7 @@ client.on('interactionCreate', async interaction => {
 
       var prompt = interaction.options.getString("prompt");
       if (prompt.match(/{/g) || prompt.match(/}/g)) {
-        await interaction.followUp(`can't use characters {,}`);
+        await interaction.followUp(`can't use these characters {,}`);
         return;
       }
       var envlist = require('child_process').execSync("conda env list").toString();
