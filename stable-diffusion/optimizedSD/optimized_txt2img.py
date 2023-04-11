@@ -41,6 +41,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--prompt", type=str, nargs="?", default="a painting of a virus monster playing guitar", help="the prompt to render"
 )
+parser.add_argument(
+    "--negativeprompt", type=str, nargs="?", default="", help="the negative prompt"
+)
 parser.add_argument("--outdir", type=str, nargs="?", help="dir to write results to", default="outputs/txt2img-samples")
 parser.add_argument(
     "--skip_grid",
@@ -271,7 +274,7 @@ with torch.no_grad():
                 modelCS.to(opt.device)
                 uc = None
                 if opt.scale != 1.0:
-                    uc = modelCS.get_learned_conditioning(batch_size * [""])
+                    uc = modelCS.get_learned_conditioning(batch_size * [opt.negativeprompt])
                 if isinstance(prompts, tuple):
                     prompts = list(prompts)
 

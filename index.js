@@ -12,6 +12,10 @@ const commands = [
       .setDescription('{} not working')
     )
     .addStringOption(option =>
+      option.setName('negativeprompt')
+      .setDescription('default: low quality,{} not working')
+    )
+    .addStringOption(option =>
       option.setName('seed')
       .setDescription('default 42')
     )
@@ -87,12 +91,19 @@ client.on('interactionCreate', async interaction => {
           await interaction.followUp(`can't use these characters {,}`);
           return;
         }
+        var negativeprompt = interaction.options.getString("negativeprompt");
+        if (!negativeprompt) {
+          negativeprompt = "low quality";
+	}
+        if (negativeprompt.match(/{/g) || negativeprompt.match(/}/g)) {
+          await interaction.followUp(`can't use these characters {,}`);
+          return;
+        }
         var envlist = require('child_process').execSync("conda env list").toString();
         if (!envlist.match(/ldm/g)){
           console.log("conda not exists, or ldm env is not exists");
           return;
         };
-        
         var height = interaction.options.getString("height");
         if (!height){
           height = 256
@@ -124,22 +135,21 @@ client.on('interactionCreate', async interaction => {
         //if (!sampler){
         //  sampler = "plms"
         //}
-        var ckptfilename = interaction.options.getString("ckpt");
+        var ckptfilepath = interaction.options.getString("ckpt");
         var ckpt = interaction.options.getString("ckpt");
-        console.log("aaa" + ckpt )
-        if (!ckptfilename){
-          ckptfilename = "E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\X-mix-V1.0.ckpt";
+        if (!ckptfilepath){
+          ckptfilepath = "E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\X-mix-V1.0.ckpt";
           ckpt = "X-mix-V1.0.ckpt"
         } else {
-          ckptfilename = `E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\${ckpt}`;  
+          ckptfilepath = `E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\${ckpt}`;  
 	}
         
-        console.log(`prompt: ${prompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
+        console.log(`prompt: ${prompt},negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
   
         var stablediffusionDir = "E:\\stable-diffusion"
   
         try {
-          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt ${ckptfilename}`,{'shell':'powershell.exe'}).toString();
+          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt "${ckptfilepath}" --negativeprompt "${negativeprompt}"`,{'shell':'powershell.exe'}).toString();
           console.log(output);
         } catch (err) {
           console.error(err);
@@ -152,7 +162,7 @@ client.on('interactionCreate', async interaction => {
   
         var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe'}).toString().trim();
         var outputfilepath = outputdir + "\\" + outputfilename;
-        await interaction.followUp({ content: `> prompt: ${prompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
+        await interaction.followUp({ content: `> prompt: ${prompt} negativeprompt: ${negativeprompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
         console.log(`send succeeded -> prompt: ${prompt}`);
         return;
       case 'modellist':
