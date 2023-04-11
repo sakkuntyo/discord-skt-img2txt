@@ -115,8 +115,14 @@ client.on('interactionCreate', async interaction => {
 
       var stablediffusionDir = "E:\\stable-diffusion"
 
-      var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps}`,{'shell':'powershell.exe'}).toString();
-      console.log(output);
+      try {
+        var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps}`,{'shell':'powershell.exe'}).toString();
+        console.log(output);
+      } catch (err) {
+        console.error(err);
+        await interaction.followUp({ content: err.toString() });
+        return;
+      }
 
       var outputdir = stablediffusionDir + "\\outputs\\" + output.match(/output.*/).toString().replace(/.*outputs\//,"");
       console.log("outputdir -> " + outputdir);
