@@ -35,6 +35,10 @@ const commands = [
       option.setName('sampler')
       .setDescription('default plms, ddim,plms,heun,euler,euler_a,dpm2,dpm2_a,lms, not working')
     )
+    .addSubcommand(subcommand =>
+      subcommand.setName("modellist")
+      .setDescription('show model list')
+    ),
 ].map(command => command.toJSON());
 
 let DISCORD_TOKEN = ""
@@ -67,71 +71,72 @@ client.on('ready', async () => {
 
 client.on('interactionCreate', async interaction => {
   if (interaction.isChatInputCommand()){
-    if (interaction.commandName === 'txt2img') {
-      await interaction.deferReply("txt2img is thinking...");
-
-      var prompt = interaction.options.getString("prompt");
-      if (prompt.match(/{/g) || prompt.match(/}/g)) {
-        await interaction.followUp(`can't use these characters {,}`);
+    switch (interaction.commandName) {
+      case 'txt2img':
+        await interaction.deferReply("txt2img is thinking...");
+  
+        var prompt = interaction.options.getString("prompt");
+        if (prompt.match(/{/g) || prompt.match(/}/g)) {
+          await interaction.followUp(`can't use these characters {,}`);
+          return;
+        }
+        var envlist = require('child_process').execSync("conda env list").toString();
+        if (!envlist.match(/ldm/g)){
+          console.log("conda not exists, or ldm env is not exists");
+          return;
+        };
+        
+        var height = interaction.options.getString("height");
+        if (!height){
+          height = 256
+        }
+        var width = interaction.options.getString("width");
+        if (!width){
+          width = 256
+        }
+        var seed = interaction.options.getString("seed");
+        if (!seed){
+          seed = 42
+        }
+        var numberofiterate = 1
+        //var numberofiterate = interaction.options.getString("numberofiterate");
+        //if (!numberofiterate){
+        //  numberofiterate = 1
+        //}
+        var numberofsamples = 1
+        //var numberofsamples = interaction.options.getString("numberofsamples");
+        //if (!numberofsamples){
+        //  numberofsamples = 1
+        //}
+        var ddimsteps = interaction.options.getString("ddimsteps");
+        if (!ddimsteps){
+          ddimsteps = 30
+        }
+        var sampler = interaction.options.getString("sampler");
+        if (!sampler){
+          sampler = "plms"
+        }
+        console.log(`prompt: ${prompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}`)
+  
+        var stablediffusionDir = "E:\\stable-diffusion"
+  
+        try {
+          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps}`,{'shell':'powershell.exe'}).toString();
+          console.log(output);
+        } catch (err) {
+          console.error(err);
+          await interaction.followUp({ content: err.toString() });
+          return;
+        }
+  
+        var outputdir = stablediffusionDir + "\\outputs\\" + output.match(/output.*/).toString().replace(/.*outputs\//,"");
+        console.log("outputdir -> " + outputdir);
+  
+        var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe'}).toString().trim();
+        var outputfilepath = outputdir + "\\" + outputfilename;
+        await interaction.followUp({ content: `> prompt: ${prompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}`, files: [outputfilepath] });
+        console.log(`send succeeded -> prompt: ${prompt}`);
         return;
-      }
-      var envlist = require('child_process').execSync("conda env list").toString();
-      if (!envlist.match(/ldm/g)){
-        console.log("conda not exists, or ldm env is not exists");
-        return;
-      };
-      
-      var height = interaction.options.getString("height");
-      if (!height){
-        height = 256
-      }
-      var width = interaction.options.getString("width");
-      if (!width){
-        width = 256
-      }
-      var seed = interaction.options.getString("seed");
-      if (!seed){
-        seed = 42
-      }
-      var numberofiterate = 1
-      //var numberofiterate = interaction.options.getString("numberofiterate");
-      //if (!numberofiterate){
-      //  numberofiterate = 1
-      //}
-      var numberofsamples = 1
-      //var numberofsamples = interaction.options.getString("numberofsamples");
-      //if (!numberofsamples){
-      //  numberofsamples = 1
-      //}
-      var ddimsteps = interaction.options.getString("ddimsteps");
-      if (!ddimsteps){
-        ddimsteps = 30
-      }
-      var sampler = interaction.options.getString("sampler");
-      if (!sampler){
-        sampler = "plms"
-      }
-      console.log(`prompt: ${prompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}`)
-
-      var stablediffusionDir = "E:\\stable-diffusion"
-
-      try {
-        var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps}`,{'shell':'powershell.exe'}).toString();
-        console.log(output);
-      } catch (err) {
-        console.error(err);
-        await interaction.followUp({ content: err.toString() });
-        return;
-      }
-
-      var outputdir = stablediffusionDir + "\\outputs\\" + output.match(/output.*/).toString().replace(/.*outputs\//,"");
-      console.log("outputdir -> " + outputdir);
-
-      var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe'}).toString().trim();
-      var outputfilepath = outputdir + "\\" + outputfilename;
-      await interaction.followUp({ content: `> prompt: ${prompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}`, files: [outputfilepath] });
-      console.log(`send succeeded -> prompt: ${prompt}`);
-      return;
     }
   }
 });
