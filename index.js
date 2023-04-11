@@ -1,3 +1,7 @@
+const fs = require("fs");
+const path = require('path');
+
+
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const commands = [
   new SlashCommandBuilder()
@@ -35,10 +39,13 @@ const commands = [
       option.setName('sampler')
       .setDescription('default plms, ddim,plms,heun,euler,euler_a,dpm2,dpm2_a,lms, not working')
     )
-    .addSubcommand(subcommand =>
-      subcommand.setName("modellist")
-      .setDescription('show model list')
+    .addStringOption(option =>
+      option.setName('ckpt')
+      .setDescription('the model file, default model.ckpt, available model shows "modellist" command.')
     ),
+  new SlashCommandBuilder()
+    .setName('modellist')
+    .setDescription('show available model list')
 ].map(command => command.toJSON());
 
 let DISCORD_TOKEN = ""
@@ -117,12 +124,22 @@ client.on('interactionCreate', async interaction => {
         //if (!sampler){
         //  sampler = "plms"
         //}
-        console.log(`prompt: ${prompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}`)
+        var ckptfilename = interaction.options.getString("ckpt");
+        var ckpt = interaction.options.getString("ckpt");
+        console.log("aaa" + ckpt )
+        if (!ckptfilename){
+          ckptfilename = "E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\X-mix-V1.0.ckpt";
+          ckpt = "X-mix-V1.0.ckpt"
+        } else {
+          ckptfilename = `E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\${ckpt}`;  
+	}
+        
+        console.log(`prompt: ${prompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
   
         var stablediffusionDir = "E:\\stable-diffusion"
   
         try {
-          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler}`,{'shell':'powershell.exe'}).toString();
+          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt ${ckptfilename}`,{'shell':'powershell.exe'}).toString();
           console.log(output);
         } catch (err) {
           console.error(err);
@@ -135,8 +152,31 @@ client.on('interactionCreate', async interaction => {
   
         var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe'}).toString().trim();
         var outputfilepath = outputdir + "\\" + outputfilename;
-        await interaction.followUp({ content: `> prompt: ${prompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}`, files: [outputfilepath] });
+        await interaction.followUp({ content: `> prompt: ${prompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
         console.log(`send succeeded -> prompt: ${prompt}`);
+        return;
+      case 'modellist':
+        await interaction.deferReply("txt2img is thinking...");
+        const directoryPath = 'E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1';
+        const regexPattern = /\.ckpt$/;
+
+        fs.readdir(directoryPath, async (err, files) => {
+          if (err) {
+            console.log('Error getting directory information.');
+            await interaction.followUp({ content: "sorry, some kind of error has occurred." });
+          } else {
+            var message = ""
+            console.log('Files:');
+            files.forEach(async file => {
+              if (regexPattern.test(file)) {
+                console.log(file);
+                message += `${file}\n`
+              }
+            });
+            await interaction.followUp({ content: message });
+            return;
+          }
+        });
         return;
     }
   }
