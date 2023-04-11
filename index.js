@@ -112,16 +112,17 @@ client.on('interactionCreate', async interaction => {
         if (!ddimsteps){
           ddimsteps = 30
         }
-        var sampler = interaction.options.getString("sampler");
-        if (!sampler){
-          sampler = "plms"
-        }
+        var sampler = "plms"
+        //var sampler = interaction.options.getString("sampler");
+        //if (!sampler){
+        //  sampler = "plms"
+        //}
         console.log(`prompt: ${prompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}`)
   
         var stablediffusionDir = "E:\\stable-diffusion"
   
         try {
-          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps}`,{'shell':'powershell.exe'}).toString();
+          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler}`,{'shell':'powershell.exe'}).toString();
           console.log(output);
         } catch (err) {
           console.error(err);
