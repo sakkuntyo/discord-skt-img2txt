@@ -1,6 +1,11 @@
+//common modules
 const fs = require("fs");
 const path = require('path');
 
+//bot config
+var stablediffusionDir = "E:\\stable-diffusion";
+var modelDir = "models\\ldm\\stable-diffusion-v1";
+var defaultModel = "X-mix-V1.0.ckpt";
 
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const commands = [
@@ -45,7 +50,7 @@ const commands = [
     )
     .addStringOption(option =>
       option.setName('ckpt')
-      .setDescription('the model file, default model.ckpt, available model shows "modellist" command.')
+      .setDescription(`the model file, default ${defaultModel}, available model shows "modellist" command.`)
     ),
   new SlashCommandBuilder()
     .setName('modellist')
@@ -138,15 +143,13 @@ client.on('interactionCreate', async interaction => {
         var ckptfilepath = interaction.options.getString("ckpt");
         var ckpt = interaction.options.getString("ckpt");
         if (!ckptfilepath){
-          ckptfilepath = "E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\X-mix-V1.0.ckpt";
+          ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${defaultModel}`;
           ckpt = "X-mix-V1.0.ckpt"
         } else {
-          ckptfilepath = `E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1\\${ckpt}`;  
+          ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${ckpt}`;
 	}
         
         console.log(`prompt: ${prompt},negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
-  
-        var stablediffusionDir = "E:\\stable-diffusion"
   
         require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt "${ckptfilepath}" --negativeprompt "${negativeprompt}"`, {'shell':'powershell.exe'},async (err,stdout,stderr)=>{
           if(err){
@@ -171,7 +174,7 @@ client.on('interactionCreate', async interaction => {
         break;
       case 'modellist':
         await interaction.deferReply("txt2img is thinking...");
-        const directoryPath = 'E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1';
+        const directoryPath = `${stablediffusionDir}\\${modelDir}`;
         const regexPattern = /\.ckpt$/;
 
         fs.readdir(directoryPath, async (err, files) => {
