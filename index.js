@@ -96,10 +96,12 @@ client.on('interactionCreate', async interaction => {
           await interaction.followUp(`can't use these characters {,}`);
           return;
         }
+        prompt.replace("'","").replace("$","").replace("\"",""); //sanitize
         var negativeprompt = interaction.options.getString("negativeprompt");
         if (!negativeprompt) {
           negativeprompt = "low quality";
 	}
+        negativeprompt.replace("'","").replace("$","").replace("\"",""); //sanitize
         if (negativeprompt.match(/{/g) || negativeprompt.match(/}/g)) {
           await interaction.followUp(`can't use these characters {,}`);
           return;
@@ -111,35 +113,42 @@ client.on('interactionCreate', async interaction => {
         };
         var height = interaction.options.getString("height");
         if (!height){
-          height = 256
+          height = "256"
         }
+        height.replace("'","").replace("$","").replace("\"",""); //sanitize
         var width = interaction.options.getString("width");
         if (!width){
-          width = 256
+          width = "256"
         }
+        width.replace("'","").replace("$","").replace("\"",""); //sanitize
         var seed = interaction.options.getString("seed");
         if (!seed){
-          seed = 42
+          seed = "42"
         }
-        var numberofiterate = 1
+        seed.replace("'","").replace("$","").replace("\"",""); //sanitize
+        var numberofiterate = "1"
         //var numberofiterate = interaction.options.getString("numberofiterate");
         //if (!numberofiterate){
-        //  numberofiterate = 1
+        //  numberofiterate = "1"
         //}
-        var numberofsamples = 1
+        //numberofiterate.replace("'","").replace("$","").replace("\"",""); //sanitize
+        var numberofsamples = "1"
         //var numberofsamples = interaction.options.getString("numberofsamples");
         //if (!numberofsamples){
-        //  numberofsamples = 1
+        //  numberofsamples = "1"
         //}
+        //numberofsamples.replace("'","").replace("$","").replace("\"",""); //sanitize
         var ddimsteps = interaction.options.getString("ddimsteps");
         if (!ddimsteps){
-          ddimsteps = 30
+          ddimsteps = "30"
         }
+        ddimsteps.replace("'","").replace("$","").replace("\"",""); //sanitize
         var sampler = "plms"
         //var sampler = interaction.options.getString("sampler");
         //if (!sampler){
         //  sampler = "plms"
         //}
+        //sampler.replace("'","").replace("$","").replace("\"",""); //sanitize
         var ckptfilepath = interaction.options.getString("ckpt");
         var ckpt = interaction.options.getString("ckpt");
         if (!ckptfilepath){
@@ -148,10 +157,10 @@ client.on('interactionCreate', async interaction => {
         } else {
           ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${ckpt}`;
 	}
-        
-        console.log(`prompt: ${prompt},negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
+        ckptfilepath.replace("'","").replace("$","").replace("\"",""); //sanitize
+        console.log(`prompt: ${prompt}, negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
   
-        require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt "${ckptfilepath}" --negativeprompt "${negativeprompt}"`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
+        require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt '${prompt}'--negativeprompt '${negativeprompt}' --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler '${sampler}' --ckpt '${ckptfilepath}'`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
           if(err){
             console.error(err);
             await interaction.followUp({ content: err.toString() });
