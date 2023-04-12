@@ -148,23 +148,27 @@ client.on('interactionCreate', async interaction => {
   
         var stablediffusionDir = "E:\\stable-diffusion"
   
-        try {
-          var output = require('child_process').execSync(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt "${ckptfilepath}" --negativeprompt "${negativeprompt}"`,{'shell':'powershell.exe'}).toString();
-          console.log(output);
-        } catch (err) {
-          console.error(err);
-          await interaction.followUp({ content: err.toString() });
+        require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt "${prompt}" --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler ${sampler} --ckpt "${ckptfilepath}" --negativeprompt "${negativeprompt}"`, {'shell':'powershell.exe'},async (err,stdout,stderr)=>{
+          if(err){
+            console.error(err);
+            await interaction.followUp({ content: err.toString() });
+            return;
+	  }
+          if(stderr){
+            console.error(stderr);
+	  }
+
+          console.log(stdout);
+          var outputdir = stablediffusionDir + "\\outputs\\" + stdout.match(/output.*/).toString().replace(/.*outputs\//,"");
+          console.log("outputdir -> " + outputdir);
+    
+          var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe'}).toString().trim();
+          var outputfilepath = outputdir + "\\" + outputfilename;
+          await interaction.followUp({ content: `> prompt: ${prompt} negativeprompt: ${negativeprompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
+          console.log(`send succeeded -> prompt: ${prompt}`);
           return;
-        }
-  
-        var outputdir = stablediffusionDir + "\\outputs\\" + output.match(/output.*/).toString().replace(/.*outputs\//,"");
-        console.log("outputdir -> " + outputdir);
-  
-        var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe'}).toString().trim();
-        var outputfilepath = outputdir + "\\" + outputfilename;
-        await interaction.followUp({ content: `> prompt: ${prompt} negativeprompt: ${negativeprompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
-        console.log(`send succeeded -> prompt: ${prompt}`);
-        return;
+	});
+        break;
       case 'modellist':
         await interaction.deferReply("txt2img is thinking...");
         const directoryPath = 'E:\\stable-diffusion\\models\\ldm\\stable-diffusion-v1';
@@ -188,6 +192,7 @@ client.on('interactionCreate', async interaction => {
           }
         });
         return;
+        break;
     }
   }
 });
