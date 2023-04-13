@@ -160,7 +160,7 @@ client.on('interactionCreate', async interaction => {
         ckptfilepath.replace("'","").replace("$","").replace("\"",""); //sanitize
         console.log(`prompt: ${prompt}, negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
   
-        require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt '${prompt}'--negativeprompt '${negativeprompt}' --H ${height} --W ${width} --seed ${seed} --n_iter ${numberofiterate} --n_samples ${numberofsamples} --ddim_steps ${ddimsteps} --sampler '${sampler}' --ckpt '${ckptfilepath}'`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
+        require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt '${prompt}'--negativeprompt '${negativeprompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --sampler '${sampler}' --ckpt '${ckptfilepath}'`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
           if(err){
             console.error(err);
             await interaction.followUp({ content: err.toString() });
