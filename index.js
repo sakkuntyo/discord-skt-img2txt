@@ -115,14 +115,14 @@ client.on('interactionCreate', async interaction => {
         if (!height){
           height = "256"
         }
-        height = parseInt(height) - (parseInt(height) % 64);
         height.replace("'","").replace("$","").replace("\"",""); //sanitize
+        height = parseInt(height) - (parseInt(height) % 64);
         var width = interaction.options.getString("width");
         if (!width){
           width = "256"
         }
-        width = parseInt(width) - (parseInt(width) % 64);
         width.replace("'","").replace("$","").replace("\"",""); //sanitize
+        width = parseInt(width) - (parseInt(width) % 64);
         var seed = interaction.options.getString("seed");
         if (!seed){
           seed = "42"
