@@ -3,9 +3,9 @@ const fs = require("fs");
 const path = require('path');
 
 //bot config
-var stablediffusionDir = "E:\\stable-diffusion";
+var stablediffusionDir = "D:\\stable-diffusion";
 var modelDir = "models\\ldm\\stable-diffusion-v1";
-var defaultModel = "X-mix-V1.0.ckpt";
+var defaultModel = "HD-22-fp32.safetensors.ckpt";
 
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const commands = [
@@ -153,7 +153,7 @@ client.on('interactionCreate', async interaction => {
         var ckpt = interaction.options.getString("ckpt");
         if (!ckptfilepath){
           ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${defaultModel}`;
-          ckpt = "X-mix-V1.0.ckpt"
+          ckpt = defaultModel;
         } else {
           ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${ckpt}`;
 	}
