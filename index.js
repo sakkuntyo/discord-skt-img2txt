@@ -1,9 +1,11 @@
 //common modules
 const fs = require("fs");
 const path = require('path');
+require('date-utils');
 
 //bot config
 var stablediffusionDir = "D:\\stable-diffusion";
+var outputDir = "bot-out";
 var modelDir = "models\\ldm\\stable-diffusion-v1";
 var defaultModel = "HD-22-fp32.safetensors.ckpt";
 
@@ -160,8 +162,12 @@ client.on('interactionCreate', async interaction => {
           ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${ckpt}`;
 	}
         ckptfilepath.replace("'","").replace("$","").replace("\"",""); //sanitize
+
+        const date = new Date();
+        const currentTime = date.toFormat('YYYYMMDDHH24MISS');
+        var onesoutputDir = `${stablediffusionDir}\\${outputDir}\\` + currentTime
         console.log(`prompt: ${prompt}, negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`);
-        var command = `conda activate ldm;cd ${stablediffusionDir};python scripts/txt2img.py --prompt '${prompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --plms --ckpt '${ckptfilepath}'`;
+        var command = `conda activate ldm;cd ${stablediffusionDir};python scripts/txt2img.py --prompt '${prompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --plms --ckpt '${ckptfilepath}' --outdir '${onesoutputDir}'`;
         console.log("command:\n" + command)
         //require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt '${prompt}'--negativeprompt '${negativeprompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --sampler '${sampler}' --ckpt '${ckptfilepath}'`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
         require('child_process').exec(command, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
@@ -175,11 +181,13 @@ client.on('interactionCreate', async interaction => {
 	  }
 
           console.log(stdout);
-          var outputdir = stablediffusionDir + "\\outputs\\" + stdout.match(/output.*/).toString().replace(/.*outputs\//,"").replace(/ /,"");
-          console.log("outputdir -> " + outputdir);
+          //var outputdir = stablediffusionDir + "\\outputs\\" + stdout.match(/output.*/).toString().replace(/.*outputs\//,"").replace(/ /,"");
+          //console.log("outputdir -> " + outputdir);
     
-          var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe','windowsHide': true}).toString().trim();
-          var outputfilepath = outputdir + "\\" + outputfilename;
+          var outputfilename = require('child_process').execSync(`$(cd "${onesoutputDir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe','windowsHide': true}).toString().trim();
+          var outputfilepath = onesoutputDir + "\\" + outputfilename;
+          console.log("outputfilename :" + outputfilename);
+          console.log("outputfilepath :" + outputfilepath);
           await interaction.followUp({ content: `> /txt2img prompt: ${prompt} negativeprompt: ${negativeprompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
           console.log(`send succeeded -> prompt: ${prompt}`);
           return;
