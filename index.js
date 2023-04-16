@@ -106,11 +106,11 @@ client.on('interactionCreate', async interaction => {
           await interaction.followUp(`can't use these characters {,}`);
           return;
         }
-        var envlist = require('child_process').execSync("conda env list",{'windowsHide': true}).toString();
-        if (!envlist.match(/ldm/g)){
-          console.log("conda not exists, or ldm env is not exists");
-          return;
-        };
+        //var envlist = require('child_process').execSync("conda env list",{'windowsHide': true}).toString();
+        //if (!envlist.match(/ldm/g)){
+        //  console.log("conda not exists, or ldm env is not exists");
+        //  return;
+        //};
         var height = interaction.options.getString("height");
         if (!height){
           height = "256"
