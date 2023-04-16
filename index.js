@@ -18,7 +18,7 @@ const commands = [
     )
     .addStringOption(option =>
       option.setName('negativeprompt')
-      .setDescription('default: low quality,{} not working')
+      .setDescription('default: low quality,{} not working, not working.')
     )
     .addStringOption(option =>
       option.setName('seed')
@@ -160,9 +160,11 @@ client.on('interactionCreate', async interaction => {
           ckptfilepath = `${stablediffusionDir}\\${modelDir}\\${ckpt}`;
 	}
         ckptfilepath.replace("'","").replace("$","").replace("\"",""); //sanitize
-        console.log(`prompt: ${prompt}, negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`)
-  
-        require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt '${prompt}'--negativeprompt '${negativeprompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --sampler '${sampler}' --ckpt '${ckptfilepath}'`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
+        console.log(`prompt: ${prompt}, negativeprompt: ${negativeprompt}, height: ${height}, width: ${width}, seed: ${seed}, numberofiterate: ${numberofiterate}, numberofsamples: ${numberofsamples}, ddimsteps: ${ddimsteps}, sampler: ${sampler}, ckpt: ${ckpt}`);
+        var command = `conda activate ldm;cd ${stablediffusionDir};python scripts/txt2img.py --prompt '${prompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --plms --ckpt '${ckptfilepath}'`;
+        console.log("command:\n" + command)
+        //require('child_process').exec(`conda activate ldm;cd ${stablediffusionDir};python optimizedSD/optimized_txt2img.py --prompt '${prompt}'--negativeprompt '${negativeprompt}' --H '${height}' --W '${width}' --seed '${seed}' --n_iter '${numberofiterate}' --n_samples '${numberofsamples}' --ddim_steps '${ddimsteps}' --sampler '${sampler}' --ckpt '${ckptfilepath}'`, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
+        require('child_process').exec(command, {'shell':'powershell.exe','windowsHide': true},async (err,stdout,stderr)=>{
           if(err){
             console.error(err);
             await interaction.followUp({ content: err.toString() });
@@ -173,7 +175,7 @@ client.on('interactionCreate', async interaction => {
 	  }
 
           console.log(stdout);
-          var outputdir = stablediffusionDir + "\\outputs\\" + stdout.match(/output.*/).toString().replace(/.*outputs\//,"");
+          var outputdir = stablediffusionDir + "\\outputs\\" + stdout.match(/output.*/).toString().replace(/.*outputs\//,"").replace(/ /,"");
           console.log("outputdir -> " + outputdir);
     
           var outputfilename = require('child_process').execSync(`$(cd "${outputdir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe','windowsHide': true}).toString().trim();
