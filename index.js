@@ -181,14 +181,13 @@ client.on('interactionCreate', async interaction => {
 	  }
 
           console.log(stdout);
-          //var outputdir = stablediffusionDir + "\\outputs\\" + stdout.match(/output.*/).toString().replace(/.*outputs\//,"").replace(/ /,"");
-          //console.log("outputdir -> " + outputdir);
     
-          var outputfilename = require('child_process').execSync(`$(cd "${onesoutputDir}";dir | sort -Property LastWriteTime)[-1].Name`,{'shell':'powershell.exe','windowsHide': true}).toString().trim();
-          var outputfilepath = onesoutputDir + "\\" + outputfilename;
-          console.log("outputfilename :" + outputfilename);
-          console.log("outputfilepath :" + outputfilepath);
-          await interaction.followUp({ content: `> /txt2img prompt: ${prompt} negativeprompt: ${negativeprompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: [outputfilepath] });
+          var outputfilepaths = [];
+          fs.readdirSync(`${onesoutputDir}\\samples`).forEach((filename) => {
+            outputfilepaths.push(`${onesoutputDir}\\samples\\${filename}`);
+	  });
+          
+          await interaction.followUp({ content: `> /txt2img prompt: ${prompt} negativeprompt: ${negativeprompt} height: ${height} width: ${width} seed: ${seed} numberofiterate: ${numberofiterate} numberofsamples: ${numberofsamples} ddimsteps: ${ddimsteps} sampler: ${sampler}, ckpt: ${ckpt}`, files: outputfilepaths });
           console.log(`send succeeded -> prompt: ${prompt}`);
           return;
 	});
