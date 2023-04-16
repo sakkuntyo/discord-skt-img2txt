@@ -28,11 +28,11 @@ const commands = [
     )
     .addStringOption(option =>
       option.setName('height')
-      .setDescription('default 256,minimum 256')
+      .setDescription('default 512,minimum 64')
     )
     .addStringOption(option =>
       option.setName('width')
-      .setDescription('default 256,minimum 256')
+      .setDescription('default 512,minimum 64')
     )
     .addStringOption(option =>
       option.setName('numberofiterate')
@@ -115,13 +115,13 @@ client.on('interactionCreate', async interaction => {
         //};
         var height = interaction.options.getString("height");
         if (!height){
-          height = "256"
+          height = "512"
         }
         height.replace("'","").replace("$","").replace("\"",""); //sanitize
         height = parseInt(height) - (parseInt(height) % 64);
         var width = interaction.options.getString("width");
         if (!width){
-          width = "256"
+          width = "512"
         }
         width.replace("'","").replace("$","").replace("\"",""); //sanitize
         width = parseInt(width) - (parseInt(width) % 64);
