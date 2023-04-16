@@ -36,7 +36,7 @@ const commands = [
     )
     .addStringOption(option =>
       option.setName('numberofiterate')
-      .setDescription('default 1, not working')
+      .setDescription('default 1')
     )
     .addStringOption(option =>
       option.setName('numberofsamples')
@@ -130,12 +130,12 @@ client.on('interactionCreate', async interaction => {
           seed = "42"
         }
         seed.replace("'","").replace("$","").replace("\"",""); //sanitize
-        var numberofiterate = "1"
-        //var numberofiterate = interaction.options.getString("numberofiterate");
-        //if (!numberofiterate){
-        //  numberofiterate = "1"
-        //}
-        //numberofiterate.replace("'","").replace("$","").replace("\"",""); //sanitize
+        //var numberofiterate = "1"
+        var numberofiterate = interaction.options.getString("numberofiterate");
+        if (!numberofiterate){
+          numberofiterate = "1"
+        }
+        numberofiterate.replace("'","").replace("$","").replace("\"",""); //sanitize
         var numberofsamples = "1"
         //var numberofsamples = interaction.options.getString("numberofsamples");
         //if (!numberofsamples){
