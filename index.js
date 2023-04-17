@@ -38,7 +38,7 @@ const commands = [
     )
     .addStringOption(option =>
       option.setName('numberofiterate')
-      .setDescription('default 1')
+      .setDescription('default 1, maximum 10')
     )
     .addStringOption(option =>
       option.setName('numberofsamples')
@@ -77,7 +77,7 @@ const commands = [
     )
     .addStringOption(option =>
       option.setName('numberofiterate')
-      .setDescription('default 1')
+      .setDescription('default 1, maximum 10')
     )
     .addStringOption(option =>
       option.setName('strength')
@@ -122,6 +122,9 @@ client.on('ready', async () => {
 client.on('interactionCreate', async interaction => {
   if (interaction.isChatInputCommand()){
     var prompt = interaction.options.getString("prompt");
+    if (!prompt) {
+      prompt = "";
+    }
     if (prompt.match(/{/g) || prompt.match(/}/g)) {
       await interaction.followUp(`can't use these characters {,}`);
       return;
@@ -172,6 +175,9 @@ client.on('interactionCreate', async interaction => {
     var numberofiterate = interaction.options.getString("numberofiterate");
     if (!numberofiterate){
       numberofiterate = "1"
+    }
+    if (numberofiterate > 10) {
+      numberofiterate = "10"
     }
     numberofiterate.replace("'","").replace("$","").replace("\"",""); //sanitize
     var numberofsamples = "1"
