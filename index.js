@@ -11,6 +11,15 @@ var outputDir = "bot-out";
 var modelDir = "models\\ldm\\stable-diffusion-v1";
 var defaultModel = "HD-22-fp32.safetensors.ckpt";
 
+//get model list 
+function getModelList() {
+  const directoryPath = `${stablediffusionDir}\\${modelDir}`;
+  const regexPattern = /\.ckpt$/;
+  var files = fs.readdirSync(directoryPath)
+  files = files.filter(file => file.match(regexPattern))
+  return files;
+}
+
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const commands = [
   new SlashCommandBuilder()
@@ -55,6 +64,7 @@ const commands = [
     .addStringOption(option =>
       option.setName('ckpt')
       .setDescription(`the model file, default ${defaultModel}, available model shows "modellist" command.`)
+	    .setChoices(...getModelList().map(e => {return { name: e, value: e }}))
     ),
   new SlashCommandBuilder()
     .setName('img2img')
@@ -86,6 +96,7 @@ const commands = [
     .addStringOption(option =>
       option.setName('ckpt')
       .setDescription(`the model file, default ${defaultModel}, available model shows "modellist" command.`)
+	    .setChoices(...getModelList().map(e => {return { name: e, value: e }}))
     ),
   new SlashCommandBuilder()
     .setName('modellist')
@@ -281,13 +292,5 @@ client.on('interactionCreate', async interaction => {
     }
   }
 });
-
-function getModelList() {
-  const directoryPath = `${stablediffusionDir}\\${modelDir}`;
-  const regexPattern = /\.ckpt$/;
-  var files = fs.readdirSync(directoryPath)
-  files = files.filter(file => file.match(regexPattern))
-  return files;
-}
 
 client.login(DISCORD_TOKEN);
