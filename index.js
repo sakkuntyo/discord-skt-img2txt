@@ -274,30 +274,20 @@ client.on('interactionCreate', async interaction => {
 	});
         break;
       case 'modellist':
-        const directoryPath = `${stablediffusionDir}\\${modelDir}`;
-        const regexPattern = /\.ckpt$/;
-
-        fs.readdir(directoryPath, async (err, files) => {
-          if (err) {
-            console.log('Error getting directory information.');
-            await interaction.followUp({ content: "sorry, some kind of error has occurred." });
-          } else {
-            var message = ""
-            console.log('Files:');
-            files.forEach(async file => {
-              if (regexPattern.test(file)) {
-                console.log(file);
-                message += `${file}\n`
-              }
-            });
-            await interaction.followUp({ content: message });
-            return;
-          }
-        });
-        return;
+        console.log('Files:');
+		    console.log(getModelList())
+        await interaction.followUp({ content: getModelList().join("\n") });
         break;
     }
   }
 });
+
+function getModelList() {
+  const directoryPath = `${stablediffusionDir}\\${modelDir}`;
+  const regexPattern = /\.ckpt$/;
+  var files = fs.readdirSync(directoryPath)
+  files = files.filter(file => file.match(regexPattern))
+  return files;
+}
 
 client.login(DISCORD_TOKEN);
